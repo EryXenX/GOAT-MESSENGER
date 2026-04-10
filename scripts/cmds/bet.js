@@ -1,47 +1,27 @@
-const fs = require("fs");
-
-const balanceFile = __dirname + "/game.json";
-
-function getBalance(uid) {
-  const data = JSON.parse(fs.readFileSync(balanceFile));
-  return data[uid]?.balance ?? 1000;
-}
-
-function setBalance(uid, balance) {
-  const data = JSON.parse(fs.readFileSync(balanceFile));
-  data[uid] = { balance };
-  fs.writeFileSync(balanceFile, JSON.stringify(data, null, 2));
-}
-
 module.exports.config = {
   name: "bet",
-  version: "2.0",
+  version: "3.0",
   author: "MOHAMMAD AKASH",
   role: 0,
   category: "economy",
   shortDescription: "Casino betting game"
 };
 
-module.exports.onStart = async function ({ api, event, args }) {
-
+module.exports.onStart = async function ({ api, event, args, usersData }) {
   const { senderID, threadID, messageID } = event;
 
   if (!args[0])
     return api.sendMessage("🎰 Usage: bet <amount>", threadID, messageID);
 
   const bet = parseInt(args[0]);
-
   if (!bet || bet <= 0)
     return api.sendMessage("❌ Invalid bet amount!", threadID, messageID);
 
-  let balance = getBalance(senderID);
+  const userData = await usersData.get(senderID);
+  let balance = userData?.data?.money ?? 100;
 
   if (balance < bet)
-    return api.sendMessage(
-      `❌ Not enough balance!\n🏦 Balance: ${balance}$`,
-      threadID,
-      messageID
-    );
+    return api.sendMessage(`❌ Not enough balance!\n🏦 Balance: ${balance}$`, threadID, messageID);
 
   const outcomes = [
     { text: "💥 You lost everything!", multiplier: 0 },
@@ -52,9 +32,7 @@ module.exports.onStart = async function ({ api, event, args }) {
     { text: "🎉 JACKPOT! 10x reward!", multiplier: 10 }
   ];
 
-  // ===== Probability Control =====
   const win = Math.random() < 0.6;
-
   let selected;
 
   if (win) {
@@ -66,10 +44,9 @@ module.exports.onStart = async function ({ api, event, args }) {
   }
 
   const reward = Math.floor(bet * selected.multiplier);
-
   balance = balance - bet + reward;
 
-  setBalance(senderID, balance);
+  await usersData.set(senderID, { data: { ...userData.data, money: balance } });
 
   const msg =
 `${selected.text}
