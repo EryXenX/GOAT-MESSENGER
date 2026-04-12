@@ -1,76 +1,86 @@
 const axios = require("axios");
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 
 module.exports = {
   config: {
     name: "webss",
+    aliases: ["screenshot", "ss"],
     version: "1.1",
-    author: "MOHAMMAD AKASH",
-    countDown: 5,
+    author: "EryXenX",
+    countDown: 10,
     role: 2,
-    shortDescription: {
-      en: "Website screenshot"
-    },
-    description: {
-      en: "Take a full page screenshot of any website"
-    },
-    category: "Ai",
+    shortDescription: "Website screenshot",
+    longDescription: "Take a screenshot of any website",
+    category: "utility",
     guide: {
-      en: "{p}webss <url>\nExample: {p}webss https://google.com"
-    }
+      en: "{p}webss <url>\nExample: {p}webss mariasmm.shop",
+    },
   },
 
-  langs: {
-    en: {
-      missing:
-        "⚠️  Pʟᴇᴀsᴇ Pʀᴏᴠɪᴅᴇ A Vᴀʟɪᴅ Uʀʟ\n📌  Eɢ : webss https://example.com",
-      loading:
-        "📸  Wᴇʙ Sᴄʀᴇᴇɴsʜᴏᴛ Tᴀᴋɪɴɢ...\n🌐  %1",
-      error:
-        "❌  Sᴄʀᴇᴇɴsʜᴏᴛ Fᴀɪʟᴇᴅ\n🌐  Iɴᴠᴀʟɪᴅ Oʀ Bʟᴏᴄᴋᴇᴅ Uʀʟ"
+  onStart: async function ({ api, event, args, message }) {
+    if (!args[0]) {
+      return message.reply("No URL provided!\n\nExample: !webss mariasmm.shop");
     }
-  },
 
-  onStart: async function ({ message, args, getLang }) {
-    if (!args[0]) return message.reply(getLang("missing"));
+    let url = args[0].trim();
 
-    const url = args[0].startsWith("http")
-      ? args[0]
-      : `https://${args[0]}`;
-
-    await message.reply(getLang("loading", url));
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
 
     try {
-      const res = await axios.get(
-        `https://api.popcat.xyz/v2/screenshot?url=${encodeURIComponent(url)}`,
-        { responseType: "arraybuffer" }
-      );
-
-      const cacheDir = path.join(__dirname, "cache");
-      if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
-
-      const filePath = path.join(
-        cacheDir,
-        `webss_${Date.now()}.png`
-      );
-
-      fs.writeFileSync(filePath, res.data);
-
-      await message.reply(
-        {
-          body:
-            "📸  Wᴇʙsɪᴛᴇ Sᴄʀᴇᴇɴsʜᴏᴛ\n\n" +
-            `🌐  Uʀʟ : ${url}\n` +
-            "🖼️  Tʏᴘᴇ : Fᴜʟʟ Pᴀɢᴇ\n" +
-            "⚡  Sᴛᴀᴛᴜs : Sᴜᴄᴄᴇss",
-          attachment: fs.createReadStream(filePath)
-        },
-        () => fs.unlinkSync(filePath)
-      );
-    } catch (err) {
-      console.error(err);
-      message.reply(getLang("error"));
+      new URL(url);
+    } catch {
+      return message.reply("Invalid URL!\nExample: !webss mariasmm.shop");
     }
-  }
+
+    const { messageID } = event;
+
+    await api.setMessageReaction("⏳", messageID, () => {}, true);
+
+    const screenshotPath = path.join(__dirname, `../tmp/webss_${Date.now()}.png`);
+
+    try {
+      const encodedUrl = encodeURIComponent(url);
+      const apiUrl = `https://s.wordpress.com/mshots/v1/${encodedUrl}?w=1280&h=800`;
+
+      let imageBuffer;
+      const maxAttempts = 5;
+
+      for (let i = 0; i < maxAttempts; i++) {
+        const response = await axios.get(apiUrl, {
+          responseType: "arraybuffer",
+          timeout: 30000,
+        });
+
+        const buffer = Buffer.from(response.data);
+        const isGif = buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;
+
+        if (!isGif && buffer.length > 5000) {
+          imageBuffer = buffer;
+          break;
+        }
+
+        await new Promise((r) => setTimeout(r, 4000));
+      }
+
+      if (!imageBuffer) throw new Error("Screenshot not ready, try again later");
+
+      await fs.outputFile(screenshotPath, imageBuffer);
+      await api.setMessageReaction("✅", messageID, () => {}, true);
+      await message.reply({
+        body: `✅ Screenshot ready!\n🌐 ${url}`,
+        attachment: fs.createReadStream(screenshotPath),
+      });
+
+    } catch (err) {
+      await api.setMessageReaction("❌", messageID, () => {}, true);
+      message.reply(`Failed to take screenshot!\n\nError: ${err.message}`);
+    } finally {
+      setTimeout(() => {
+        fs.remove(screenshotPath).catch(() => {});
+      }, 10000);
+    }
+  },
 };
