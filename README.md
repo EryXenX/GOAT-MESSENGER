@@ -17,24 +17,6 @@
 
 ---
 
-> ⚠️ **IMPORTANT ATTRIBUTION NOTICE**
->
-> This project is a **custom fork** based on the fork chain below.
-> All original copyright belongs to **NTKhang (ntkhang03)**.
-> This repository preserves and respects the original license in full.
-
----
-
-## 🔗 Fork Chain
-
-```
-ntkhang03  (Original Creator — Goat Bot V2)
-    └── NeoKEX  (Goatbot-updated — 1st fork)
-            └── EryXenX  (GOAT-MESSENGER — 2nd fork / this repo)
-```
-
----
-
 ## 🔥 Official Support Group
 
 <p align="center">
@@ -47,9 +29,7 @@ ntkhang03  (Original Creator — Goat Bot V2)
 
 ## 📌 About This Fork
 
-**GOAT MESSENGER** is a custom-modified fork of [NeoKEX/Goatbot-updated](https://github.com/NeoKEX/Goatbot-updated), which itself is a fork of the original [Goat Bot V2](https://github.com/ntkhang03/Goat-Bot-V2) by **ntkhang03**.
-
-This fork adds personal configurations and improvements on top of the existing fork chain.
+**GOAT MESSENGER** is a custom-modified fork of [Goat Bot V2](https://github.com/ntkhang03/Goat-Bot-V2) by **ntkhang03**, with additional modifications by **EryXenX**.
 
 ### What This Fork Adds (by EryXenX):
 - 🎨 Custom UI configurations
@@ -57,19 +37,14 @@ This fork adds personal configurations and improvements on top of the existing f
 - 🔧 Personal automation tweaks
 - 📦 Additional utility commands
 
-> The core engine, architecture, and all original features are entirely the work of **ntkhang03**.
-
 ---
 
 ## ⚙️ Framework Details
 
-| Component              | Description                                                              |
-| ---------------------- | ------------------------------------------------------------------------ |
-| **Original Creator**   | [ntkhang03](https://github.com/ntkhang03/Goat-Bot-V2)                    |
-| **Intermediate Fork**  | [NeoKEX/Goatbot-updated](https://github.com/NeoKEX/Goatbot-updated)     |
-| **This Fork**          | [EryXenX/GOAT-MESSENGER](https://github.com/EryXenX/GOAT-MESSENGER)     |
-| **Platform**           | Facebook Messenger                                                       |
-| **Language**           | Node.js 20.x                                                             |
+| Component    | Description        |
+| ------------ | ------------------ |
+| **Platform** | Facebook Messenger |
+| **Language** | Node.js 20.x       |
 
 ---
 
