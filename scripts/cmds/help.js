@@ -7,7 +7,7 @@ module.exports = {
     name: "help",
     aliases: ["menu", "commands"],
     version: "6.2",
-    author: "MOHAMMAD AKASH",
+    author: "EryXenX",
     shortDescription: "Show all commands",
     longDescription: "Show all commands in clean UI",
     category: "system",
